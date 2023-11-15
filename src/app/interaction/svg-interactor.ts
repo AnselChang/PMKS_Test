@@ -15,7 +15,7 @@ export class SvgInteractor extends Interactor {
         // on space bar, create a node
         this.onKeyDown$.subscribe((event) => {
             if (event.key === " ") {
-                this.stateService.getGraph().createNode(this.getMousePos());
+                this.stateService.getGraph().createNode(this.getMousePos().posSVG);
             }
         });
 
@@ -27,7 +27,7 @@ export class SvgInteractor extends Interactor {
             {
                 label: "Create node",
                 action: () => {
-                    this.stateService.getGraph().createNode(this.getMousePos());
+                    this.stateService.getGraph().createNode(this.getMousePos().posSVG);
                     this.saveService.save();
                 },
                 disabled: false

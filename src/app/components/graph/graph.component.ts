@@ -6,7 +6,7 @@ import { Edge } from 'src/app/model/edge';
 import { Node } from 'src/app/model/node';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
-import SVGCoordinateSystem from '../svg/svg-coordinate-system';
+import { SvgService } from 'src/app/services/svg.service';
 
 @Component({
   selector: '[app-graph]',
@@ -14,9 +14,12 @@ import SVGCoordinateSystem from '../svg/svg-coordinate-system';
   styleUrls: ['./graph.component.css']
 })
 export class GraphComponent {
-  @Input() svgCoordinateSystem!: SVGCoordinateSystem;
 
-  constructor(public stateService: StateService, private interactorService: InteractionService) {
+  constructor(
+    public stateService: StateService,
+    private interactorService: InteractionService,
+    private svgService: SvgService,
+    ) {
     console.log("GraphComponent.constructor");
   }
 
@@ -38,6 +41,6 @@ export class GraphComponent {
   }
 
   public getNewNodeLineEnd(): Coord {
-    return this.interactorService.getMousePos();
+    return this.svgService.getMousePos().posSVG;
   }
 }

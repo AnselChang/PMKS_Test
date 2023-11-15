@@ -4,6 +4,7 @@ import { Coord } from '../model/coord';
 import { ContextMenuService } from './context-menu.service';
 import { ClickCapture, ClickCaptureID } from '../interaction/click-capture';
 import { Subject } from 'rxjs';
+import { SvgService } from './svg.service';
 
 /*
 This service keeps track of global state for the interaction system, such as which
@@ -24,7 +25,6 @@ export class InteractionService {
 
   private heldKeys: Set<string> = new Set<string>(); // keys currently being held down
 
-  private mousePos: Coord = new Coord(0, 0); // current mouse position
   private mouseMovedAfterDown: boolean = false; // whether the mouse has moved since the last mouse down event
 
   public hoveringObject?: Interactor; // object that the mouse is currently hovering over
@@ -35,7 +35,9 @@ export class InteractionService {
 
   private clickCapture: ClickCapture | undefined;
 
-  constructor(private contextMenuService: ContextMenuService) {}
+  constructor(private contextMenuService: ContextMenuService,
+    private svgService: SvgService
+    ) {}
 
 
   // select the object and deselect all others
@@ -66,8 +68,6 @@ export class InteractionService {
 
   // select the object and unselect all others
   public _onMouseDown(object: Interactor, event: MouseEvent): void {
-
-    this.mousePos = new Coord(event.clientX, event.clientY);
     
     this.mouseMovedAfterDown = false;
 
@@ -75,7 +75,7 @@ export class InteractionService {
 
     // if click capture, handle special case
     if (this.clickCapture) {
-      this.clickCapture.onClick$.next(this.mousePos);
+      this.clickCapture.onClick$.next(this.svgService.getMousePos());
       this.exitClickCapture();
       return;
     }
@@ -102,7 +102,6 @@ export class InteractionService {
 
   public _onMouseRightClick(object: Interactor, event: MouseEvent): void {
 
-    this.mousePos = new Coord(event.clientX, event.clientY);
     this.mouseMovedAfterDown = false;
 
     event.preventDefault(); // prevent context menu from appearing
@@ -110,7 +109,7 @@ export class InteractionService {
 
     // if click capture, handle special case
     if (this.clickCapture) {
-      this.clickCapture.onClick$.next(this.mousePos);
+      this.clickCapture.onClick$.next(this.svgService.getMousePos());
       this.exitClickCapture();
       return;
     }
@@ -128,7 +127,6 @@ export class InteractionService {
 
   public _onMouseUp(object: Interactor, event: MouseEvent): void {
 
-    this.mousePos = new Coord(event.clientX, event.clientY);
     event.stopPropagation(); // don't let parent components handle this event
 
     // if it was a click, deselect objects that were not clicked on
@@ -169,7 +167,8 @@ export class InteractionService {
   // if mouse is down, then drag the selected objects
   public _onMouseMove(object: Interactor, event: MouseEvent): void {
 
-    this.mousePos = new Coord(event.clientX, event.clientY);
+    this.svgService.setMousePosScreen(new Coord(event.clientX, event.clientY));
+    console.log("InteractionService.onMouseMove", this.svgService.getMousePos());
     this.mouseMovedAfterDown = true;
 
     this.hoveringObject = object;
@@ -177,7 +176,7 @@ export class InteractionService {
     event.stopPropagation(); // don't let parent components handle this event
 
     if (this.clickCapture) {
-      this.clickCapture.onMouseMove$.next(this.mousePos);
+      this.clickCapture.onMouseMove$.next(this.svgService.getMousePos());
       return;
     }
 
@@ -229,7 +228,7 @@ export class InteractionService {
 
   // registers an interactor to receive mouse events
   public register(interactor: Interactor): void {
-    interactor.initInteraction(this.getMousePos.bind(this));
+    interactor._initSVGService(this.svgService);
     this.objects.push(interactor);
   }
 
@@ -266,10 +265,6 @@ export class InteractionService {
 
     this.isDragging = true;
     object._onDragStart();
-  }
-
-  public getMousePos(): Coord {
-    return this.mousePos;
   }
 
   public getObjectDebug(): string[] {

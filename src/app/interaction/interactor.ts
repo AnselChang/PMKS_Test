@@ -1,5 +1,7 @@
 import { Subject } from "rxjs";
 import { Coord } from "../model/coord";
+import { SvgService } from "../services/svg.service";
+import MousePosition from "../services/mouse-position";
 
 /*
 You should subclass Interactor to create Interactors specific to your interactive components, like nodes
@@ -36,7 +38,7 @@ export abstract class Interactor {
     public onRightClick$ = new Subject<boolean>();
     public onKeyDown$ = new Subject<KeyboardEvent>();
 
-    public getMousePos: () => Coord = () => { return new Coord(0, 0); };
+    private svgService?: SvgService;
 
     constructor(public selectable: boolean, public draggable: boolean) {
 
@@ -46,9 +48,13 @@ export abstract class Interactor {
 
     }
 
-    // set the interaction service's mouse event handlers
-    public initInteraction(getMousePos: () => Coord): void {
-        this.getMousePos = getMousePos;
+    // only called by InteractionService
+    public _initSVGService(svgService: SvgService): void {
+        this.svgService = svgService;
+    }
+
+    public getMousePos(): MousePosition {
+        return this.svgService!.getMousePos();
     }
 
 
@@ -56,7 +62,7 @@ export abstract class Interactor {
     // This updates Interactor state and sends events to subscribers.
     public _onSelect(): void {
         this.isSelected = true;
-        this.mouseStartPos = this.getMousePos();
+        this.mouseStartPos = this.getMousePos().posSVG;
         this.onSelect$.next(true);
     }
     public _onDeselect(): void {
@@ -65,11 +71,11 @@ export abstract class Interactor {
     }
     public _onDragStart(): void {
         this.isDragged = true;
-        this.mouseStartPos = this.getMousePos();
+        this.mouseStartPos = this.getMousePos().posSVG;
         this.onDragStart$.next(true);
     }
     public _onDrag(): void {
-        this.dragOffset = this.getMousePos().sub(this.mouseStartPos!);
+        this.dragOffset = this.getMousePos().posSVG.sub(this.mouseStartPos!);
         this.onDrag$.next(true);
     }
     public _onDragEnd(): void {

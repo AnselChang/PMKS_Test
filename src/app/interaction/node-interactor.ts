@@ -72,7 +72,7 @@ export class NodeInteractor extends Interactor {
         capture.onClick$.subscribe((mousePos) => {
             
             if (capture.getHoveringNode() === undefined) { // if not hovering over a node, create a new node to attach to
-                this.stateService.getGraph().createNodeWithLink(mousePos, this.node);
+                this.stateService.getGraph().createNodeWithLink(mousePos.posSVG, this.node);
             } else { // if hovering over a node, create a link to that node
                 this.stateService.getGraph().createLink(this.node, capture.getHoveringNode()!);
             }

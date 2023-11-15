@@ -7,6 +7,7 @@ This behavior is handled by the InteractionService.
 
 import { Subject } from "rxjs";
 import { Coord } from "../model/coord";
+import MousePosition from "../services/mouse-position";
 
 export enum ClickCaptureID {
     CREATE_NODE
@@ -14,8 +15,8 @@ export enum ClickCaptureID {
 
 export class ClickCapture {
     
-    onClick$ = new Subject<Coord>();
-    onMouseMove$ = new Subject<Coord>();
+    onClick$ = new Subject<MousePosition>();
+    onMouseMove$ = new Subject<MousePosition>();
 
     constructor(public id: ClickCaptureID) {}
 }
