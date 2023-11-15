@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, Input } from '@angular/core';
 import { ClickCapture, ClickCaptureID } from 'src/app/interaction/click-capture';
 import { CreateNodeCapture } from 'src/app/interaction/create-node-capture';
 import { Coord } from 'src/app/model/coord';
@@ -6,6 +6,7 @@ import { Edge } from 'src/app/model/edge';
 import { Node } from 'src/app/model/node';
 import { InteractionService } from 'src/app/services/interaction.service';
 import { StateService } from 'src/app/services/state.service';
+import SVGCoordinateSystem from '../svg/svg-coordinate-system';
 
 @Component({
   selector: '[app-graph]',
@@ -13,6 +14,7 @@ import { StateService } from 'src/app/services/state.service';
   styleUrls: ['./graph.component.css']
 })
 export class GraphComponent {
+  @Input() svgCoordinateSystem!: SVGCoordinateSystem;
 
   constructor(public stateService: StateService, private interactorService: InteractionService) {
     console.log("GraphComponent.constructor");

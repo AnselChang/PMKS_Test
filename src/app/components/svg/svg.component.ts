@@ -1,4 +1,4 @@
-import { Component, HostListener, OnInit, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, OnInit, ViewChild } from '@angular/core';
 import { AbstractInteractiveComponent } from '../abstract-interactive/abstract-interactive.component';
 import { SvgInteractor } from 'src/app/interaction/svg-interactor';
 import { ContextMenuOption, Interactor } from 'src/app/interaction/interactor';
@@ -6,14 +6,19 @@ import { InteractionService } from 'src/app/services/interaction.service';
 import { ContextMenuComponent } from '../context-menu/context-menu.component';
 import { StateService } from 'src/app/services/state.service';
 import { SaveService } from 'src/app/services/save.service';
+import * as svgPanZoom from 'svg-pan-zoom';
+import SVGCoordinateSystem from './svg-coordinate-system';
 
 @Component({
   selector: 'app-svg',
   templateUrl: './svg.component.html',
   styleUrls: ['./svg.component.css']
 })
-export class SvgComponent extends AbstractInteractiveComponent implements OnInit {
+export class SvgComponent extends AbstractInteractiveComponent implements OnInit, AfterViewInit {
+  @ViewChild('rootSVG') root!: ElementRef<SVGElement>;
 
+  private svgPanZoomInstance!: SvgPanZoom.Instance;
+  public svgCoordinateSystem = new SVGCoordinateSystem();
 
   constructor(public override interactionService: InteractionService,
     private stateService: StateService,
@@ -30,6 +35,50 @@ export class SvgComponent extends AbstractInteractiveComponent implements OnInit
       this.saveService.save();
     });
   }
+
+  ngAfterViewInit(): void {
+
+    // use svg-pan-zoom library to handle panning and zooming SVG
+    this.svgPanZoomInstance = svgPanZoom(this.root.nativeElement, {
+      zoomEnabled: true,
+      fit: true,
+      center: true,
+      zoomScaleSensitivity: 0.15,
+      dblClickZoomEnabled: false,
+      maxZoom: 10000, //These are not used, look at MAX_ZOOM
+      minZoom: 0.00001, //These are not used, look at MIN_ZOOM
+      onPan: this.handlePan.bind(this),
+      onZoom: this.handleZoom.bind(this),
+      beforePan: this.handleBeforePan.bind(this),
+      beforeZoom: this.handleBeforeZoom.bind(this),
+      onUpdatedCTM: this.handleUpdatedCTM.bind(this),
+    });
+
+  }
+
+  // handle pan and zoom elements
+  private handlePan(newPan: SvgPanZoom.Point) {
+    console.log("handlePan", newPan);
+  }
+
+  private handleZoom(newZoom: number) {
+    console.log("handleZoom", newZoom);
+  }
+
+  private handleBeforePan(oldPan: SvgPanZoom.Point, newPan: SvgPanZoom.Point) {
+    console.log("handleBeforePan", oldPan, newPan);
+  }
+
+  private handleBeforeZoom(oldZoom: number, newZoom: number) {
+    console.log("handleBeforeZoom", oldZoom, newZoom);
+  }
+
+  private handleUpdatedCTM(newCTM: SVGMatrix) {
+    console.log("handleUpdatedCTM", newCTM);
+    this.svgCoordinateSystem.updateCTM(newCTM);
+  }
+
+
 
   // handle keyboard events and send to interaction service
   @HostListener('document:keydown', ['$event'])
