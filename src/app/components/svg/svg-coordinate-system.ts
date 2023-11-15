@@ -1,9 +1,11 @@
 import { Coord } from "src/app/model/coord";
 
 export default class SVGCoordinateSystem {
-    private ctm = new SVGMatrix();
+    private ctm?: SVGMatrix;
 
     screenToSVG(screenPos: Coord): Coord {
+
+        if (!this.ctm) return new Coord(0, 0);
 
         const inverseCTM = this.ctm.inverse();
         const svgPos = screenPos.applyMatrix(inverseCTM);
@@ -12,8 +14,10 @@ export default class SVGCoordinateSystem {
     
     svgToScreen(svgPos: Coord): Coord {
 
-    const screenPos = svgPos.applyMatrix(this.ctm);
-    return screenPos;
+        if (!this.ctm) return new Coord(0, 0);
+
+        const screenPos = svgPos.applyMatrix(this.ctm);
+        return screenPos;
     }
 
     updateCTM(ctm: SVGMatrix) {
